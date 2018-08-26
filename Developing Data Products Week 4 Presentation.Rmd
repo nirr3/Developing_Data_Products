@@ -1,0 +1,41 @@
+---
+title: "Developing Data Products Week 4 Assignment"
+author: "Nicklas Ankarstad"
+date: "August 26, 2018"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Overview 
+
+As data scientists, we often have to make decisions on how much of our data we should include in our training data set versus our testing data set. We also look at many different variables that help improve the accuracy of our final model. This Shiny app provides a dynamic way to help address these items by allowing users to: 
+
+- Explore the size of the training and testing data splitting
+- Include or exclude  variables in the training of the decision tree model
+- Evaluate the impact on decision tree formation and model performance
+
+## Slide With Code
+
+The shiny app uses the iris data set which is comprised of four varibales we can use to predict the species of the flower. The data set contains three different species:
+
+```{r}
+summary(iris$Species)
+```
+
+
+
+## Shiny App
+
+```{r iris, echo = FALSE}
+shinyAppDir("C:/Users/Nick/Documents/Developing_Data_Products_Week_4/")
+```
+
+## Conclusion
+
+The Shiny app illustrates the impacts and importance of splitting the data correctly and selecting the right variables. This further illustrates the importance of hiring good data scientists.
+
+
