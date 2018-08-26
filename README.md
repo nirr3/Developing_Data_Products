@@ -99,4 +99,3 @@ shinyApp(ui= (fluidPage(
 
 The Shiny app illustrates the impacts and importance of splitting the data correctly and selecting the right variables. This further illustrates the importance of hiring good data scientists.
 
-
