@@ -1,37 +1,102 @@
-## Welcome to GitHub Pages
+---
+title: "Developing Data Products Week 4 Assignment"
+author: "Nicklas Ankarstad"
+date: "August 26, 2018"
+output:
+  ioslides_presentation:
+    keep_md: yes
+    widescreen: yes
+runtime: shiny
+resource_files:
+- ui.R
+- server.R
+---
 
-You can use the [editor on GitHub](https://github.com/nirr3/Developing_Data_Products/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+## Overview 
 
-### Jekyll Themes
+As data scientists, we often have to make decisions on how much of our data we should include in our training data set versus our testing data set. We also look at many different variables that help improve the accuracy of our final model. This Shiny app provides a dynamic way to help address these items by allowing users to: 
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/nirr3/Developing_Data_Products/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+- Explore the size of the training and testing data splitting
+- Include or exclude  variables in the training of the decision tree model
+- Evaluate the impact on decision tree formation and model performance
 
-### Support or Contact
+## Slide With Code
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+The shiny app uses the iris data set which is comprised of four varibales we can use to predict the species of the flower. The data set contains three different species:
+
+```{r}
+summary(iris$Species)
+```
+
+```{r load_packages, echo=FALSE,include=FALSE}
+data("iris")
+library(shiny)
+library(caret)
+library(rattle)
+library(e1071)
+```
+
+## Shiny App
+
+```{r iris, echo = FALSE}
+
+shinyApp(ui= (fluidPage(
+  titlePanel("Classify Flowers Species"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("Train_Test_Ratio", "What percentage of the data should be included in training set?",.10,.90, value =.75),
+      checkboxInput("Sepal_Length","Include Sepal Length in Model", value = TRUE),
+      checkboxInput("Sepal_Width","Include Sepal Width in Model", value = TRUE),
+      checkboxInput("Petal_Length","Include Petal Length in Model", value = TRUE),
+      checkboxInput("Petal_Width","Include Petal Width in Model", value = TRUE)
+    ),
+    mainPanel(
+      plotOutput("plot1"),
+      h3("Confusion Matrix for the Model"),
+      verbatimTextOutput("pred1")
+    )
+  )
+)) 
+,server =(function(input,output){
+  set.seed(12345)
+  
+  inTrain <- reactive({createDataPartition(iris$Species, p = input$Train_Test_Ratio, list =FALSE)
+  })
+  train.data <- reactive({data.frame(iris[inTrain(),])
+  })
+  test.data <- reactive({data.frame(iris[-inTrain(),])
+  })
+  
+  fit.rpart <- reactive({
+    train(
+      as.formula(paste("Species~",paste(ifelse(input$Sepal_Length == TRUE, "+ Sepal.Length",""),
+                                        ifelse(input$Sepal_Width == TRUE, "+ Sepal.Width",""),
+                                        ifelse(input$Petal_Length == TRUE, "+ Petal.Length",""),
+                                        ifelse(input$Petal_Width == TRUE, "+ Petal.Width",""), collapse = ""))), data=train.data(), method="rpart")
+  })
+  
+  
+  pred.rpart <- reactive({
+    predict(fit.rpart(), newdata = test.data())
+  })
+  reactive
+  output$plot1 <- renderPlot({
+    fancyRpartPlot(fit.rpart()$final)
+  })
+  rpart.acc <- reactive({
+    confusionMatrix(pred.rpart(),test.data()$Species)
+  })
+  
+  output$pred1 <- renderPrint({rpart.acc()})
+}))
+```
+
+## Conclusion
+
+The Shiny app illustrates the impacts and importance of splitting the data correctly and selecting the right variables. This further illustrates the importance of hiring good data scientists.
+
+
